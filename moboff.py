@@ -5,6 +5,7 @@ import os
 import subprocess
 import json
 from sys import version_info
+import shutil
 
 from pushbullet import Pushbullet
 import pushbullet
@@ -13,6 +14,7 @@ import click
 from download_utils import select_directory
 
 real_path_of_MobOff = os.path.dirname(os.path.realpath(__file__))
+
 
 if version_info[0] == 2:
     rawinput = raw_input
@@ -49,6 +51,7 @@ def cli():
               help='Delete the music file after sending.')
 @click.option('--send', is_flag=bool, default=False,
               help='Send the file to a friend.')
+
 
 def download(link, newdevice, video, delete,send):
     """Download a youtube video or playlist
@@ -106,8 +109,11 @@ def download(link, newdevice, video, delete,send):
         click.secho("The directory previously selected to download music can't be accessed."
                     " Please rerun moboff initialise.")
         quit()
-    
-    os.mkdir("{0}/temp".format(directory))
+
+    try:
+        os.mkdir("{0}/temp".format(directory))
+    except OSError as err:
+        print(err)
     os.chdir("{0}/temp".format(directory))
     
     print("This may take a while.")
@@ -173,9 +179,10 @@ def download(link, newdevice, video, delete,send):
   
     for file in list_of_files:
         if file.endswith((".mp3", "mp4", ".mkv")):
-            os.rename("{0}/temp/{1}".format(directory, file),"{0}/{1}".format(directory, file))
-            
-    os.rmdir("{0}/temp".format(directory))   
+            os.rename("{0}/temp/{1}".format(directory, file), "{0}/{1}".format(directory, file))
+
+    #os.rmdir("{0}/temp".format(directory))
+    shutil.rmtree("{0}/temp".format(directory))
     os.chdir(directory)
 
     if delete:
